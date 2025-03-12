@@ -10,14 +10,17 @@ app = Flask(__name__)
 # Telegram Bot Token
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8133253468:AAGrb9l3pk_Mh5t23XempObkmFmxtIRpXZA")
 
-# Dynamic Web App URL (Replace before deployment)
-WEB_APP_URL = os.getenv("WEB_APP_URL", "https://yourdomain.com")  # Set this dynamically in Render
+# Dynamic Web App URL (Set this in Render)
+WEB_APP_URL = os.getenv("WEB_APP_URL", "https://yourdomain.com")
+
+# Home route to confirm Flask is working
+@app.route('/')
+def home():
+    return "Flask Server is Running 🚀"
 
 # Command handler for /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("Open Spin Wheel", web_app=WebAppInfo(url=WEB_APP_URL))]
-    ]
+    keyboard = [[InlineKeyboardButton("Open Spin Wheel", web_app=WebAppInfo(url=WEB_APP_URL))]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text("Welcome to the Spin Wheel Bot! Click below to open the spin wheel.", reply_markup=reply_markup)
 
@@ -39,8 +42,11 @@ def handle_spin():
 def main():
     global application  # Make application accessible in Flask
 
+    # Get Render-assigned port
+    port = int(os.getenv("PORT", 5000))
+
     # Start Flask server in a separate thread
-    flask_thread = threading.Thread(target=app.run, kwargs={"host": "0.0.0.0", "port": 5000})
+    flask_thread = threading.Thread(target=app.run, kwargs={"host": "0.0.0.0", "port": port})
     flask_thread.daemon = True
     flask_thread.start()
 
